@@ -13,20 +13,24 @@ class ViewController: UIViewController {
     
     private let locationManager = CLLocationManager()
     
-
+    private var currentLocation: CLLocationCoordinate2D?
+    
     @IBOutlet weak var mapView: MKMapView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureLocationServices()
-
     }
     
     private func configureLocationServices(){
         locationManager.delegate = self
-        if CLLocationManager.authorizationStatus() == .notDetermined{
+        
+        let status = CLLocationManager.authorizationStatus()
+        if status == .notDetermined{
             locationManager.requestAlwaysAuthorization()
-        }else{
+        }else if status == .authorizedAlways || status == .authorizedWhenInUse {
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.startUpdatingLocation()
             
         }
         
@@ -41,11 +45,16 @@ class ViewController: UIViewController {
 extension ViewController: CLLocationManagerDelegate{
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        
+       
+        guard let latestLocation = locations.first else {
+            return
+        }
+        currentLocation = latestLocation.coordinate
+        print(currentLocation)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        
+        print("status changes")
     }
     
 }

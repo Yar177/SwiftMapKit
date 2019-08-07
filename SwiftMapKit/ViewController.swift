@@ -29,14 +29,21 @@ class ViewController: UIViewController {
         if status == .notDetermined{
             locationManager.requestAlwaysAuthorization()
         }else if status == .authorizedAlways || status == .authorizedWhenInUse {
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.startUpdatingLocation()
+           beginLocationUpdates(locatonManager: locationManager)
             
         }
-        
-        
     }
-
+    
+    private func beginLocationUpdates(locatonManager: CLLocationManager){
+        mapView.showsUserLocation = true
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
+    }
+    
+    private func zoomToLatestLocation(with coordinate: CLLocationCoordinate2D){
+        let zoomRegion = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
+        mapView.setRegion(zoomRegion, animated: true )
+    }
 
 }
 
@@ -49,12 +56,20 @@ extension ViewController: CLLocationManagerDelegate{
         guard let latestLocation = locations.first else {
             return
         }
+        
+        if currentLocation == nil {
+            zoomToLatestLocation(with: latestLocation.coordinate)
+        }
+        
         currentLocation = latestLocation.coordinate
-        print(currentLocation)
+   
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("status changes")
+        if status == .authorizedAlways || status == .authorizedWhenInUse {
+            beginLocationUpdates(locatonManager: manager)
+        }
+        
     }
     
 }
